@@ -24,7 +24,7 @@
     <ProjectGuid>{8e7e11e0-d71a-4a01-947b-5505e95f41f2}</ProjectGuid>
     <RootNamespace>Tile_Test</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Tile Engine</ProjectName>
+    <ProjectName>wave function collapse</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
