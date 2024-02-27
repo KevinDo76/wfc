@@ -139,6 +139,7 @@
     <ClCompile Include="sfmlPanZoomHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="textureAsset.cpp" />
+    <ClCompile Include="wfc.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Entity.h" />
@@ -146,6 +147,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="sfmlPanZoomHandler.h" />
     <ClInclude Include="textureAsset.h" />
+    <ClInclude Include="wfc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

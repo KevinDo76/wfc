@@ -8,10 +8,11 @@ public:
 	sf::Texture* texturesArray;
 	const int sx;
 	const int sy;
-	const int spriteMaxWidth;
+	int spriteMaxWidth;
+	int textureCount;
 	sf::Texture nullTexture;
 public:
-	textureAsset(int sx, int sy, int spriteMaxWidth);
+	textureAsset(int sx, int sy);
 	sf::Texture* getTexture(int id);
 	int getSize();
 	bool isAssetLoaded();

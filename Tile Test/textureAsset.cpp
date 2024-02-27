@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-textureAsset::textureAsset(int sx, int sy, int spriteMaxWidth) : sx(sx), sy(sy), spriteMaxWidth(spriteMaxWidth), isLoaded(false), texturesArray(nullptr), textureArraySize(0) {
+textureAsset::textureAsset(int sx, int sy) : sx(sx), sy(sy), isLoaded(false), texturesArray(nullptr), textureArraySize(0) {
 	sf::Image nullImage = sf::Image();
 	nullImage.create(sx, sy, sf::Color(255, 0, 255));
 	for (int ty = 0; ty<int(sy / 2); ty++) {
@@ -44,6 +44,8 @@ bool textureAsset::loadTextureMap(std::string path) {
 	int tileXCount = imgSize.x / this->sx;
 	int tileYCount = imgSize.y / this->sy;
 
+	this->spriteMaxWidth = tileXCount;
+
 	for (int i = 0; i < tileXCount * tileYCount; i++) {
 		int tileTextureX = (i % this->spriteMaxWidth) * this->sx;
 		int tileTextureY = int(i / this->spriteMaxWidth) * this->sy;
@@ -59,6 +61,7 @@ bool textureAsset::loadTextureMap(std::string path) {
 		tempImages.push_back(isolatedImage);
 	}
 	textureArraySize = (int)tempImages.size();
+	textureCount = textureArraySize;
 
 	delete[] texturesArray;
 	texturesArray = new sf::Texture[tempImages.size()];

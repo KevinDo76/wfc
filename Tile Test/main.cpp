@@ -6,39 +6,58 @@
 #include <sstream>
 #include <iostream>
 #include <cmath>
+#include "wfc.h"
 #define WORLD_RES_X 1000
 #define WORLD_RES_Y 1000
 int main()
 {
+    int selectedTileIndex = 0;
     sfmlPanZoomHandler winObj(sf::VideoMode(WORLD_RES_X, WORLD_RES_Y), "Tile Engine");
+    textureAsset mainMap = textureAsset(16, 16);
+    mainMap.loadTextureMap("tileSet.png");
 
-    mapManager map = mapManager(20,20,16, 16);
-    textureAsset mainMap = textureAsset(16, 16, 10);
-    mainMap.loadTextureMap("test.png");
-    map.loadTextureAsset(mainMap);
+    mapManager exampleMap = mapManager(10,10,16, 16);
+    mapManager SelectionMap(mainMap.textureCount, 1,16,16);
+    mapManager genMap(20, 20, 16, 16);
 
-    winObj.window.setFramerateLimit(240);
-    map.loadDataIntoTile("save.txt");
+    wfc wfcObj(exampleMap, genMap);
+
+    SelectionMap.setPosition(0, -32);
+    genMap.setPosition(0, 176);
+    SelectionMap.loadTextureAsset(mainMap);
+    genMap.loadTextureAsset(mainMap);
+
+    genMap.tiles[30].updateTextureID(4);
+
+    for (int i = 0; i < mainMap.textureCount; i++) {
+        SelectionMap.tiles[i].updateTextureID(i);
+    }
+
+    exampleMap.loadTextureAsset(mainMap);
+    exampleMap.loadDataIntoTile("save.txt");
+
+    wfcObj.generateConstraints();
+
+
+    winObj.window.setFramerateLimit(70);
 
 
     while (winObj.window.isOpen())
     {
         while (winObj.window.pollEvent(winObj.event)) {
-            if (winObj.window.hasFocus() && map.isTextureAssetLoaded()) {
-                if (winObj.event.type == sf::Event::MouseButtonPressed && winObj.event.mouseButton.button == sf::Mouse::Button::Left) {
-                    int index = map.getCurrentTileIndexMouse(winObj.window);
-                    if (index >= 0) {
-                        map.tiles[index].updateTextureID((map.tiles[index].textureID + 1) % mainMap.getSize());
+            if (winObj.window.hasFocus() && exampleMap.isTextureAssetLoaded()) {
+                if (winObj.event.type == sf::Event::MouseButtonPressed && winObj.event.mouseButton.button == sf::Mouse::Button::Right) {
+                    int indexSel = SelectionMap.getCurrentTileIndexMouse(winObj.window);
+                    int indexMap = exampleMap.getCurrentTileIndexMouse(winObj.window);
+                    if (indexSel > -1) {
+                        selectedTileIndex = indexSel;
                     }
-                }
-                else if (winObj.event.type == sf::Event::MouseButtonPressed && winObj.event.mouseButton.button == sf::Mouse::Button::Right) {
-                    int index = map.getCurrentTileIndexMouse(winObj.window);
-                    if (index >= 0) {
-                        map.tiles[index].updateTextureID(std::abs((map.tiles[index].textureID - 1)) % mainMap.getSize());
+                    else if (indexMap>-1) {
+                        exampleMap.tiles[indexMap].updateTextureID(selectedTileIndex);
                     }
                 }
                 else if (winObj.event.type == sf::Event::KeyPressed && winObj.event.key.code == sf::Keyboard::S) {
-                    map.saveTileIntoFile("save.txt");
+                    exampleMap.saveTileIntoFile("save.txt");
                     std::cout << "saved\n";
                 }
             }
@@ -48,7 +67,9 @@ int main()
 
 
         winObj.window.clear();
-        map.draw(winObj.window);
+        SelectionMap.draw(winObj.window);
+        exampleMap.draw(winObj.window);
+        genMap.draw(winObj.window);
         winObj.window.display();
 
 

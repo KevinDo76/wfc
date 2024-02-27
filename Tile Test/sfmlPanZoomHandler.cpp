@@ -26,13 +26,13 @@ void sfmlPanZoomHandler::handleEventPanZoom() {
 	if (this->window.hasFocus()) {
 		switch (this->event.type) {
 		case sf::Event::MouseButtonPressed:
-			if (this->event.mouseButton.button == sf::Mouse::Button::Middle) {
+			if (this->event.mouseButton.button == sf::Mouse::Button::Left) {
 				this->panning = true;
 				this->lastMouse = sf::Vector2f(sf::Mouse::getPosition(window));
 			}
 			break;
 		case sf::Event::MouseButtonReleased:
-			if (this->event.mouseButton.button == sf::Mouse::Button::Middle) {
+			if (this->event.mouseButton.button == sf::Mouse::Button::Left) {
 				this->panning = false;
 			}
 			break;

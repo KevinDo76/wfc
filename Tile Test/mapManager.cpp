@@ -6,7 +6,6 @@
 #include <vector>
 #include <cmath>
 #include <cmath>
-#define SPRITE_MAP_MAX_WIDTH 25
 
 template<typename T>
 T clamp(T n, T min, T max) {
@@ -52,6 +51,7 @@ void mapManager::draw(sf::RenderWindow& window) {
 	sf::Vector2f rightTopBound = window.mapPixelToCoords(sf::Vector2i(winSize.x,winSize.y));
 	sf::Vector2f leftBottomBound = window.mapPixelToCoords(sf::Vector2i(0, winSize.y));
 	sf::Vector2f firstTilePos = tiles[0].sprite.getPosition();
+
 	int yMax = (this->sizeY) * this->sizeX;
 	
 	for (int x = 0; x < this->sizeX; x++) {
@@ -70,6 +70,23 @@ void mapManager::draw(sf::RenderWindow& window) {
 		}
 		firstTilePos.x += this->scaleX;
 	}
+}
+
+int mapManager::getTileIndexFromCoord(sf::Vector2i& tileCoord) {
+	if (tileCoord.x<0 || tileCoord.x>=sizeX || tileCoord.y<0 || tileCoord.y >= sizeY) {
+		return -1;
+	}
+	return tileCoord.y * sizeX + tileCoord.x;
+}
+
+void mapManager::getTileCoordFromIndex(int index, sf::Vector2i& tileCoord) {
+	if (index<0 || index >= tiles.size()) {
+		tileCoord.x = -1;
+		tileCoord.y = -1;
+		return;
+	}
+	tileCoord.y = int(index / sizeX);
+	tileCoord.x = index - (tileCoord.y * sizeX);
 }
 
 void mapManager::getMouseWorldCoord(sf::RenderWindow& window, sf::Vector2f& worldCoord) {

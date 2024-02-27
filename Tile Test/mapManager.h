@@ -44,15 +44,17 @@ public:
 	~mapManager();
 
 	void buildTextureCache();
-	void getMouseWorldCoord(sf::RenderWindow& window, sf::Vector2f& worldCoord);
-	int getCurrentTileIndexMouse(sf::RenderWindow& window);
-	int getCurrentTileIndexPosition(sf::RenderWindow& window, sf::Vector2f pos);
-	void getCurrentTile(sf::Vector2f worldCoord, sf::Vector2i& tileCoord);
-	bool loadTextureAsset(textureAsset& texture);
-	bool loadDataIntoTile(std::string path);
-	bool saveTileIntoFile(std::string path);
-	bool isTextureAssetLoaded();
-	void setPosition(float px, float py);
+	void getMouseWorldCoord(sf::RenderWindow& window, sf::Vector2f& worldCoord); //get the world coord of the user's mouse based on pixel position
+	int getCurrentTileIndexMouse(sf::RenderWindow& window); //get the current tile index that the mouse is hovering over
+	int getCurrentTileIndexPosition(sf::RenderWindow& window, sf::Vector2f pos); //get the tile position x-y of the tile that the mouse is hovering over
+	int getTileIndexFromCoord(sf::Vector2i& tileCoord); // get the index of a tile based on x-y coord
+	void getTileCoordFromIndex(int index, sf::Vector2i& tileCoord); // get the x-y coord of a tile based on index
+	void getCurrentTile(sf::Vector2f worldCoord, sf::Vector2i& tileCoord); //get the current tile based on position
+	bool loadTextureAsset(textureAsset& texture); //load in a texture map
+	bool loadDataIntoTile(std::string path); // load tile index configuration
+	bool saveTileIntoFile(std::string path); // save tile index configuration
+	bool isTextureAssetLoaded(); //check if a textureAsset has been loaded into the Manager or not
+	void setPosition(float px, float py); // change position
 
 	void draw(sf::RenderWindow& window);
 private:
