@@ -21,7 +21,7 @@ public:
 	wfc(mapManager& exampleMap_, mapManager& generateMap_);
 	void getContraintsFromID(int id, constraintsContainer& result);
 	void generateConstraints();
-	void computeEntropy();
+	void computeEntropy(bool narrowRange = false, int mid = 0);
 	void setAllToConstraintContainer(constraintsContainer& constraint);
 	void sumContraints(std::vector<int>& constraint, std::vector<sf::Vector2i>& commonList);
 	void computeIterate();

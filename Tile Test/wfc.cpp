@@ -31,8 +31,9 @@ bool wfc::isComputeFinished() {
 
 void wfc::setAllToConstraintContainer(constraintsContainer& constraint) {
 	std::vector<int>temp;
+	temp.reserve(sizeof(int) * exampleMap->textureSet->textureCount);
 	for (int i = 0; i < exampleMap->textureSet->textureCount; i++) {
-		temp.push_back(i);
+		temp.emplace_back(i);
 	}
 	constraint.left = temp;
 	constraint.right = temp;
@@ -40,7 +41,15 @@ void wfc::setAllToConstraintContainer(constraintsContainer& constraint) {
 	constraint.down = temp;
 }
 
-void wfc::computeEntropy() {
+void wfc::computeEntropy(bool narrowRange, int mid) {
+	int start = 0;
+	int end = generateMap->tiles.size();
+	if (narrowRange) {
+		start = std::max(0, mid - generateMap->sizeX);
+		end = std::max(0, mid + generateMap->sizeX);
+	}
+	constraintsContainer genericAll;
+	setAllToConstraintContainer(genericAll);
 	for (int i = 0; i<generateMap->tiles.size(); i++) {
 		if (mapState[i] != -1) {
 			possibleState[i].clear();
@@ -54,48 +63,43 @@ void wfc::computeEntropy() {
 		getContraintsFromID(mapState[i], allowedState);
 		generateMap->getTileCoordFromIndex(i, tileCoord);
 
-		sf::Vector2i leftOffset(tileCoord.x - 1, tileCoord.y);
-		sf::Vector2i rightOffset(tileCoord.x + 1, tileCoord.y);
-		sf::Vector2i upOffset(tileCoord.x, tileCoord.y - 1);
-		sf::Vector2i downtOffset(tileCoord.x, tileCoord.y + 1);
+		int leftIndex = generateMap->getTileIndexFromCoord({ tileCoord.x - 1, tileCoord.y });
+		int rightIndex = generateMap->getTileIndexFromCoord({ tileCoord.x + 1, tileCoord.y });
+		int upIndex = generateMap->getTileIndexFromCoord({ tileCoord.x, tileCoord.y - 1 });
+		int downIndex = generateMap->getTileIndexFromCoord({ tileCoord.x, tileCoord.y + 1 });
 
-		int leftIndex = generateMap->getTileIndexFromCoord(leftOffset);
-		int rightIndex = generateMap->getTileIndexFromCoord(rightOffset);
-		int upIndex = generateMap->getTileIndexFromCoord(upOffset);
-		int downIndex = generateMap->getTileIndexFromCoord(downtOffset);
-
-		constraintsContainer leftAllowed;
-		constraintsContainer rightAllowed;
-		constraintsContainer upAllowed;
-		constraintsContainer downAllowed;
+		std::vector<int> leftAllowed;
+		std::vector<int> rightAllowed;
+		std::vector<int> upAllowed;
+		std::vector<int> downAllowed;
 		//constraintsContainer all
 
 		if (leftIndex != -1) {
-			leftAllowed = convertedLookup[mapState[leftIndex]+1];
+			leftAllowed = convertedLookup[mapState[leftIndex]+1].right;
 		}
 		else {
-			setAllToConstraintContainer(leftAllowed);
+			leftAllowed = genericAll.right;
 		}
 
 		if (rightIndex != -1) {
-			rightAllowed = convertedLookup[mapState[rightIndex]+1];
+			rightAllowed = convertedLookup[mapState[rightIndex]+1].left;
 		}
 		else {
-			setAllToConstraintContainer(rightAllowed);
+			rightAllowed = genericAll.right;
 		}
 
 		if (upIndex != -1) {
-			upAllowed = convertedLookup[mapState[upIndex]+1];
+			upAllowed = convertedLookup[mapState[upIndex]+1].down;
 		}
 		else {
-			setAllToConstraintContainer(upAllowed);
+			upAllowed = genericAll.right;
 		}
 
 		if (downIndex != -1) {
-			downAllowed = convertedLookup[mapState[downIndex]+1];
+			downAllowed = convertedLookup[mapState[downIndex]+1].up;
 		}
 		else {
-			setAllToConstraintContainer(downAllowed);
+			downAllowed = genericAll.right;
 		}
 
 		std::vector<sf::Vector2i>commonList;
@@ -105,10 +109,10 @@ void wfc::computeEntropy() {
 			commonList.emplace_back( i,0 );
 		}
 
-		sumContraints(leftAllowed.right, commonList);
-		sumContraints(rightAllowed.left, commonList);
-		sumContraints(upAllowed.down, commonList);
-		sumContraints(downAllowed.up, commonList);
+		sumContraints(leftAllowed, commonList);
+		sumContraints(rightAllowed, commonList);
+		sumContraints(upAllowed, commonList);
+		sumContraints(downAllowed, commonList);
 		mapEntropy[i] = 0;
 		possibleState[i].clear();
 		possibleState[i].reserve(sizeof(int) * commonList.size());
@@ -138,12 +142,7 @@ void wfc::getContraintsFromID(int id, constraintsContainer& result) {
 	result.left.clear();
 	result.left.reserve(sizeof(int) * 12);
 	if (id == -1) {
-		for (int i = 0; i < constraints.size(); i++) {
-			result.left.push_back(i);
-		}
-		result.right = result.left;
-		result.up = result.left;
-		result.down = result.left;
+		setAllToConstraintContainer(result);
 	}
 	else {
 		result = constraints[id];
@@ -152,8 +151,8 @@ void wfc::getContraintsFromID(int id, constraintsContainer& result) {
 
 void wfc::generateConstraints() {
 	for (int i = 0; i < exampleMap->textureSet->textureCount; i++) {
-		constraints.push_back({});
-		weightedIndex.push_back(0);
+		constraints.emplace_back();
+		weightedIndex.emplace_back(0);
 	}
 
 	for (int i = 0; i < exampleMap->tiles.size(); i++) {
@@ -260,7 +259,7 @@ int wfc::weightedPick(std::vector<int> possibleOpt) {
 	probIndex.reserve(sizeof(int) * possibleSum);
 	for (int i = 0; i < possibleOpt.size(); i++) {
 		for (int p = 0; p < weightedIndex[possibleOpt[i]]; p++) {
-			probIndex.push_back(i);
+			probIndex.emplace_back(i);
 		}
 	}
 	return probIndex[(((float)rand()/(float)RAND_MAX) * (probIndex.size() - 1))];
@@ -293,7 +292,7 @@ void wfc::computeIterate() {
 	mapState[indexWithLowestEntrophy[selectedSwitch]] = possibleState[indexWithLowestEntrophy[selectedSwitch]][selectedTile];
 	generateMap->tiles[indexWithLowestEntrophy[selectedSwitch]].updateTextureID(possibleState[indexWithLowestEntrophy[selectedSwitch]][selectedTile]);
 	//std::cout << "selected tile " << indexWithLowestEntrophy[selectedSwitch] << " with possible index of " << selectedTile << " which is " << possibleState[indexWithLowestEntrophy[selectedSwitch]][selectedTile] << "\n";
-	computeEntropy();
+	computeEntropy(true, indexWithLowestEntrophy[selectedSwitch]);
 	iterated++;
 	collapseHistory.push_back(indexWithLowestEntrophy[selectedSwitch]);
 	for (int i = 0; i < mapEntropy.size(); i++) {

@@ -68,9 +68,11 @@ int main()
             winObj.handleEventPanZoom();
         }
         if (gen) {
-            //while (!wfcObj.isComputeFinished()) {
+            while (!wfcObj.isComputeFinished()) {
                 wfcObj.computeIterate();
-            //}
+                wfcObj.computeIterate();
+                wfcObj.computeIterate();
+            }
         }
 
         winObj.window.clear();

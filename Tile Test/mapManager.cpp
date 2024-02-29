@@ -72,7 +72,7 @@ void mapManager::draw(sf::RenderWindow& window) {
 	}
 }
 
-int mapManager::getTileIndexFromCoord(sf::Vector2i& tileCoord) {
+int mapManager::getTileIndexFromCoord(const sf::Vector2i& tileCoord) {
 	if (tileCoord.x<0 || tileCoord.x>=sizeX || tileCoord.y<0 || tileCoord.y >= sizeY) {
 		return -1;
 	}
