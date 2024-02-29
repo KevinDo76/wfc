@@ -11,23 +11,23 @@
 #define WORLD_RES_Y 1000
 int main()
 {
+    srand(2);
+    bool gen = false;
     int selectedTileIndex = 0;
     sfmlPanZoomHandler winObj(sf::VideoMode(WORLD_RES_X, WORLD_RES_Y), "Tile Engine");
-    textureAsset mainMap = textureAsset(16, 16);
-    mainMap.loadTextureMap("tileSet.png");
+    textureAsset mainMap = textureAsset(56, 56);
+    mainMap.loadTextureMap("circuit.png");
 
-    mapManager exampleMap = mapManager(10,10,16, 16);
-    mapManager SelectionMap(mainMap.textureCount, 1,16,16);
-    mapManager genMap(20, 20, 16, 16);
+    mapManager exampleMap = mapManager(20, 5, 56, 56);
+    mapManager SelectionMap(mainMap.textureCount, 1,56,56);
+    mapManager genMap(40, 40, 56, 56);
 
     wfc wfcObj(exampleMap, genMap);
 
-    SelectionMap.setPosition(0, -32);
-    genMap.setPosition(0, 176);
+    SelectionMap.setPosition(0, -70);
+     genMap.setPosition(0, 2000);
     SelectionMap.loadTextureAsset(mainMap);
     genMap.loadTextureAsset(mainMap);
-
-    genMap.tiles[30].updateTextureID(4);
 
     for (int i = 0; i < mainMap.textureCount; i++) {
         SelectionMap.tiles[i].updateTextureID(i);
@@ -38,8 +38,7 @@ int main()
 
     wfcObj.generateConstraints();
 
-
-    winObj.window.setFramerateLimit(70);
+    winObj.window.setFramerateLimit(240);
 
 
     while (winObj.window.isOpen())
@@ -60,11 +59,19 @@ int main()
                     exampleMap.saveTileIntoFile("save.txt");
                     std::cout << "saved\n";
                 }
+                else if (winObj.event.type == sf::Event::KeyPressed && winObj.event.key.code == sf::Keyboard::I) {
+                    wfcObj.computeIterate();
+                    gen = true;
+                }
             }
             
             winObj.handleEventPanZoom();
         }
-
+        if (gen) {
+            //while (!wfcObj.isComputeFinished()) {
+                wfcObj.computeIterate();
+            //}
+        }
 
         winObj.window.clear();
         SelectionMap.draw(winObj.window);
