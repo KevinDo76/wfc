@@ -36,6 +36,7 @@ public:
 	std::vector<int>collapseHistory;
 	std::vector<constraintsContainer> convertedLookup;
 	std::vector<int> weightedIndex;
+	constraintsContainer blankAll;
 	int reAttempt;
 	int lastRe;
 	int iterated;

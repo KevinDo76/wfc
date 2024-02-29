@@ -45,12 +45,11 @@ void wfc::computeEntropy(bool narrowRange, int mid) {
 	int start = 0;
 	int end = generateMap->tiles.size();
 	if (narrowRange) {
-		start = std::max(0, mid - generateMap->sizeX);
-		end = std::max(0, mid + generateMap->sizeX);
+		start = std::max(0, mid - generateMap->sizeX * 2);
+		end = std::min(int(mapEntropy.size()), mid + generateMap->sizeX * 2);
 	}
-	constraintsContainer genericAll;
-	setAllToConstraintContainer(genericAll);
-	for (int i = 0; i<generateMap->tiles.size(); i++) {
+	
+	for (int i = start; i<end; i++) {
 		if (mapState[i] != -1) {
 			possibleState[i].clear();
 			possibleState[i].emplace_back(mapState[i]);
@@ -78,28 +77,28 @@ void wfc::computeEntropy(bool narrowRange, int mid) {
 			leftAllowed = convertedLookup[mapState[leftIndex]+1].right;
 		}
 		else {
-			leftAllowed = genericAll.right;
+			leftAllowed = blankAll.right;
 		}
 
 		if (rightIndex != -1) {
 			rightAllowed = convertedLookup[mapState[rightIndex]+1].left;
 		}
 		else {
-			rightAllowed = genericAll.right;
+			rightAllowed = blankAll.right;
 		}
 
 		if (upIndex != -1) {
 			upAllowed = convertedLookup[mapState[upIndex]+1].down;
 		}
 		else {
-			upAllowed = genericAll.right;
+			upAllowed = blankAll.right;
 		}
 
 		if (downIndex != -1) {
 			downAllowed = convertedLookup[mapState[downIndex]+1].up;
 		}
 		else {
-			downAllowed = genericAll.right;
+			downAllowed = blankAll.right;
 		}
 
 		std::vector<sf::Vector2i>commonList;
@@ -140,9 +139,8 @@ void wfc::sumContraints(std::vector<int>& constraint, std::vector<sf::Vector2i>&
 
 void wfc::getContraintsFromID(int id, constraintsContainer& result) {
 	result.left.clear();
-	result.left.reserve(sizeof(int) * 12);
 	if (id == -1) {
-		setAllToConstraintContainer(result);
+		result = blankAll;
 	}
 	else {
 		result = constraints[id];
@@ -150,6 +148,7 @@ void wfc::getContraintsFromID(int id, constraintsContainer& result) {
 }
 
 void wfc::generateConstraints() {
+	setAllToConstraintContainer(blankAll);
 	for (int i = 0; i < exampleMap->textureSet->textureCount; i++) {
 		constraints.emplace_back();
 		weightedIndex.emplace_back(0);
@@ -221,8 +220,8 @@ if (downIndex != -1) {
 		}
 	}
 
-	constraintsContainer blankAll;
-	setAllToConstraintContainer(blankAll);
+	
+	
 	convertedLookup.push_back(blankAll);
 	for (int i = 0; i < constraints.size(); i++) {
 		convertedLookup.push_back(constraints[i]);
@@ -270,32 +269,39 @@ void wfc::computeIterate() {
 		std::cout << "fin\n";
 		return;
 	}
-	int lowestEntropy = exampleMap->textureSet->textureCount + 1;
+
+	int lowestEntropy = exampleMap->textureSet->textureCount;
+	std::vector<int>sortedEntrophy(mapEntropy);
+
+	//remove all maxed entrophy and collapsed cells
+	sortedEntrophy.erase(std::remove_if(sortedEntrophy.begin(),
+		sortedEntrophy.end(),
+		[&](const int i)-> bool
+		{ return i==-1 || i==exampleMap->textureSet->textureCount; }),
+		sortedEntrophy.end());
+	std::sort(sortedEntrophy.begin(), sortedEntrophy.end(), [](int& e1, int& e2) { return e1 < e2; });
+	lowestEntropy = sortedEntrophy[0];
+
 	std::vector<int>indexWithLowestEntrophy;
-	for (int i = 0; i < mapEntropy.size(); i++) {
-		if (mapEntropy[i] > -1 && mapEntropy[i] < lowestEntropy) {
-			lowestEntropy = mapEntropy[i];
-		}
-	}
 
 	for (int i = 0; i < mapEntropy.size(); i++) {
 		if (mapEntropy[i] == lowestEntropy) {
 			indexWithLowestEntrophy.push_back(i);
-			//std::cout << "adding " << i << "\n";
 		}
 	}
+
 	rand();
 	int selectedSwitch = int(rand() / (float)RAND_MAX * ((float)indexWithLowestEntrophy.size()-1));
-	//selectedSwitch = 0;
 	int selectedTile = (((float)rand() / (float)RAND_MAX) * ((float)possibleState[indexWithLowestEntrophy[selectedSwitch]].size())-1);
 	selectedTile = weightedPick(possibleState[indexWithLowestEntrophy[selectedSwitch]]);
 	mapState[indexWithLowestEntrophy[selectedSwitch]] = possibleState[indexWithLowestEntrophy[selectedSwitch]][selectedTile];
 	generateMap->tiles[indexWithLowestEntrophy[selectedSwitch]].updateTextureID(possibleState[indexWithLowestEntrophy[selectedSwitch]][selectedTile]);
-	//std::cout << "selected tile " << indexWithLowestEntrophy[selectedSwitch] << " with possible index of " << selectedTile << " which is " << possibleState[indexWithLowestEntrophy[selectedSwitch]][selectedTile] << "\n";
+	
 	computeEntropy(true, indexWithLowestEntrophy[selectedSwitch]);
-	iterated++;
+
+	iterated+=1;
 	collapseHistory.push_back(indexWithLowestEntrophy[selectedSwitch]);
-	for (int i = 0; i < mapEntropy.size(); i++) {
+	for (int i = std::max(0,indexWithLowestEntrophy[selectedSwitch] - generateMap->sizeX * 2); i < std::min(indexWithLowestEntrophy[selectedSwitch] + generateMap->sizeX * 2, int(mapEntropy.size() - 1)); i++) {
 		if (mapEntropy[i] == 0) {
 			std::cout << reAttempt << "\n";
 			if (lastRe == indexWithLowestEntrophy[selectedSwitch]) {
@@ -312,9 +318,9 @@ void wfc::computeIterate() {
 				mapState[indexToRid] = -1;
 			}
 			computeEntropy();
-			if (iterated > generateMap->sizeX * generateMap->sizeY * 2) {
-				computeReset();
-			}
 		}
+	}
+	if (iterated > generateMap->sizeX * generateMap->sizeY * 2) {
+		computeReset();
 	}
 ;}

@@ -11,21 +11,21 @@
 #define WORLD_RES_Y 1000
 int main()
 {
-    srand(2);
+    srand(1);
     bool gen = false;
     int selectedTileIndex = 0;
     sfmlPanZoomHandler winObj(sf::VideoMode(WORLD_RES_X, WORLD_RES_Y), "Tile Engine");
-    textureAsset mainMap = textureAsset(56, 56);
-    mainMap.loadTextureMap("circuit.png");
+    textureAsset mainMap = textureAsset(16, 16);
+    mainMap.loadTextureMap("test.png");
 
-    mapManager exampleMap = mapManager(20, 5, 56, 56);
-    mapManager SelectionMap(mainMap.textureCount, 1,56,56);
-    mapManager genMap(40, 40, 56, 56);
+    mapManager exampleMap = mapManager(20, 20, 16, 16);
+    mapManager SelectionMap(mainMap.textureCount, 1,16,16);
+    mapManager genMap(160, 160, 16, 16);
 
     wfc wfcObj(exampleMap, genMap);
 
     SelectionMap.setPosition(0, -70);
-     genMap.setPosition(0, 2000);
+     genMap.setPosition(0, 1000);
     SelectionMap.loadTextureAsset(mainMap);
     genMap.loadTextureAsset(mainMap);
 
@@ -72,6 +72,14 @@ int main()
                 wfcObj.computeIterate();
                 wfcObj.computeIterate();
                 wfcObj.computeIterate();
+                wfcObj.computeIterate();
+                wfcObj.computeIterate();
+                wfcObj.computeIterate();
+                wfcObj.computeIterate();
+                wfcObj.computeIterate();
+                wfcObj.computeIterate();
+                wfcObj.computeIterate();
+
             }
         }
 
